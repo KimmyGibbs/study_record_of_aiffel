@@ -110,4 +110,37 @@ $ conda deactivate
 ```shell
 # 가상환경을 잘못 만들었을 경우 다음 명령어를 통해 가상환경 삭제
 $ conda env remove -n test_my_conda_env
+```  
+---
+&nbsp;
+
+# L-4
+## 입력한 내용을 그대로 출력하기
+```shell
+$ echo hi!
+hi!
+```
+---
+## 터미널 문구 의미 파악해보기
+```shell
+# 예시
+root@superexamplecom:~#
+```
+### description
+- @ 앞의 `root`는 현재 로그인한 사용자명이 표시된다.
+- @ 뒤의 `superexamplecom`은 컴퓨터의 이름을 의미한다. 흔히 호스트명으로 표현한다.
+- : 뒤의 `~`는 현재 위치를 의미한다.
+- `#`는 로그인한 사용자의 권한이 최고 관리자 계정임을 나타낸다. 일반 사용자들의 경우에는 `$`로 표시된다.
+---
+## 파일의 권한 변경하기
+```shell
+# 현재경로의 'test.py' 파일의 권한을 변경
+$ chmod 755 test.py
+
+drwxr-xr-x 3 root root 4.0K Jun  7 09:27 test.py
+```
+---
+## 하나 이상의 텍스트 파일을 순서대로 출력해보기
+```shell
+$ cat test.txt
 ```
