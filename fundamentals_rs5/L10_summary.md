@@ -112,7 +112,7 @@ Linear Layer가 수행하는 기능은 선형대수학에서의 선형 변환(Li
 
 ### 두 사각형이 다음과 같이 주어질 때, 사각형 점 정보를 집약된 하나의 정수로 표현해보자 (데이터 집약 예시)
 <!-- 그림1 -->
-![그림 1](./images_fundamentals/lec10_1.png "그림 1")
+![그림 1](./images_fundamentals/Lecture_10/lec10_1.png "그림 1")
 
 ```text
 1. 사각형 A는 (x, y)의 좌표를 4개 가지고 있으므로 (4,2) 매트릭스로 표현가능하다.
@@ -170,7 +170,7 @@ print(f"2단계 Linear Layer의 파라미터개수: {second_linear.count_params(
 2단계 Linear Layer의 파라미터개수: 4
 ```
 <!-- 그림2 -->
-![그림 2](./images_fundamentals/lec10_2.png "그림 2")
+![그림 2](./images_fundamentals/Lecture_10/lec10_2.png "그림 2")
 
 코드 결과가 의미하는 바는 위 그림과 같다. 이런 경우 `<식1>`의 1단계 연산 결과와 2단계 연산 준비 단계가 동일해져 `(4,1)` weight를 거치는게 의미가 없다.
 ```text
@@ -193,7 +193,7 @@ Tip. Weight의 모든 요소를 Parameter라고 한다.
 ```
 ---
 <!-- 그림3 -->
-![그림 3](./images_fundamentals/lec10_3.png "그림 3")
+![그림 3](./images_fundamentals/Lecture_10/lec10_3.png "그림 3")
 
 `<식2>`의 1단계 작업 후 각 사각형에 대해 독립적인 정보가 생성된다. 이후 단계를 거쳐 `<식1>`에 비해 더 많은 사각형을 구분할 수 있다.
 ```text
@@ -273,7 +273,7 @@ print(f"\n총 Parameters: {total_params}")
 &nbsp;
 ## 4. 정보를 집약시키자! Convolution 레이어
 <!-- 그림4 -->
-![그림 4](./images_fundamentals/lec10_4.png "그림 4")
+![그림 4](./images_fundamentals/Lecture_10/lec10_4.png "그림 4")
 
 위 그림을 Linear 레이어를 활용해서 데이터를 핸들링하면 다음과 같은 계산 과정이 도출된다.
 ```text
@@ -287,7 +287,7 @@ print(f"\n총 Parameters: {total_params}")
 ### Convolution Layer
 Linear Layer의 단점을 보완하기 위해 고안된 Layer 기법
 <!-- 그림5 -->
-![그림 5](./images_fundamentals/lec10_5.png "그림 5")
+![그림 5](./images_fundamentals/Lecture_10/lec10_5.png "그림 5")
 
 ---
 [Image Processing에서의 Kernel](https://en.wikipedia.org/wiki/Kernel_(image_processing))
@@ -297,7 +297,7 @@ Linear Layer의 단점을 보완하기 위해 고안된 Layer 기법
 이미지를 훑기 위해 이동하는 단위를 Stride라고 한다. Stride가 1이면 필터를 이미지의 (0, 0)에서부터 1 픽셀씩 이동(shifting)한다.
 ```
 <!-- 그림5 gif -->
-![그림 5 GIF](./images_fundamentals/lec10_5_gif.gif "그림 5 GIF")
+![그림 5 GIF](./images_fundamentals/Lecture_10/lec10_5_gif.gif "그림 5 GIF")
 
 ---
 #### Convolution 과정에 필수적인 Padding
@@ -315,7 +315,7 @@ Convolution Filter Result = (n - f + 1) * (n - f + 1) = (n - f + 1)^2
 
 ---
 <!-- 그림 6 -->
-![그림 6](./images_fundamentals/lec10_6.png "그림 6")
+![그림 6](./images_fundamentals/Lecture_10/lec10_6.png "그림 6")
 
 ```text
 <식4>
@@ -385,7 +385,7 @@ Pooling Layer에는 Max Pooling과 Average Pooling이 있다.
 ```
 
 <!-- 그림7 -->
-![그림 7](./images_fundamentals/lec10_7.png "그림 7")
+![그림 7](./images_fundamentals/Lecture_10/lec10_7.png "그림 7")
 
 ### Receptive Field Size
 원본 이미지를 필터로 걸러낸 결과 값을 뉴런이라고 한다.</br>
@@ -562,7 +562,7 @@ Epoch 2/2
 <keras.callbacks.History at 0x7f09049379a0>
 ```
 <!-- 그림8 -->
-![그림 8](./images_fundamentals/lec10_8.png "그림 8") </br>
+![그림 8](./images_fundamentals/Lecture_10/lec10_8.png "그림 8") </br>
 테스트 데이터셋 10개분의 이미지 복원 예시 결과
 
 ### Decoder Layers for Reconstruction
