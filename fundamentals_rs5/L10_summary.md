@@ -367,5 +367,217 @@ Linear Layer의 Parameter 수: 1327104
 
 &nbsp;
 ## 5. 핵심만 추려서 더 넓게! Pooling 레이어
-Convolution 필터링을 할 때, filter를 극단적으로 키울 경우 파라미터 사이ㅈ와 연산량이 커진다.</br>
+Convolution 필터링을 할 때, filter를 극단적으로 키울 경우 파라미터 사이즈와 연산량이 커진다.</br>
 이로인해 Accuracy도 떨어지게 될 가능성이 높다.</br>
+
+따라서 차원을 감소시키면서 filtering을 해야하는데 이때 사용하는 개념이 **Pooling layer**다.</br>
+
+&nbsp;</br>
+[참고링크](https://underflow101.tistory.com/41)
+
+```text
+Pooling Layer에는 Max Pooling과 Average Pooling이 있다.
+
+1. Max Pooling: 필터(max pooling layer)의 영역에서 최대값을 찾는 방법
+2. Average Pooling: 필터(average pooling layer) 영역의 평균값을 계산하는 방법
+
+이 외에도 가중치 평균(Weight Average)풀링, L2 Norm 풀링 등이 있다.
+```
+
+<!-- 그림7 -->
+![그림 7](./images_fundamentals/lec10_7.png "그림 7")
+
+### Receptive Field Size
+원본 이미지를 필터로 걸러낸 결과 값을 뉴런이라고 한다.</br>
+이 때, 뉴런이 원본 이미지에서 담당하는 범위를 **Receptive Field**라고 한다.
+
+```text
+Q. 필터 크기가 3 X 3이고 stride가 2인 convolution 레이어에 2 X 2 max pooling 레이어가 연결된 딥러닝 모델이 있습니다. 위 그림과 같은 max pooling 레이어를 통해 빨간색 포인트가 선택되었다면 max pooling 레이어의 output에서의 receptive field의 크기는 얼마일까요?
+
+A. 위 그림에서는 빨간색, 녹색, 파란색, 하얀색 포인트가 가지는 Receptive Field의 영역 전체가 max pooling 레이어의 한 포인트의 Receptive Field가 되므로 이때는 5 X 5의 Receptive Field를 가지게 된다.
+```
+
+## 6. 집약된 정보의 복원! Transpose Convolution 레이어
+---
+### Auto encoder
+원본 이미지를 Convolution 필터로 걸러낸 후, 이 결과를 역재생해서 **원본 이미지와 최대한 유사한 정보를 복원**해내는 과정을 담당한다.</br>
+
+---
+[참고링크-Autoencoder](https://excelsior-cjh.tistory.com/187)
+
+아래는 MINIST 데이터셋을 기반으로 데이터를 복원하는 Auto Encoder 예시
+```text
+순서는 다음과 같습니다.
+
+* 패키지 임포트 및 MINIST 데이터셋 로딩
+* AutoEncoder 모델 구성
+* AutoEncoder 모델 훈련
+* AUtoEncoder Reconstruction Test
+```
+```python
+# 패키지 임포트
+import numpy as np
+from tensorflow.keras.layers import Input, Dense, Conv2D, MaxPooling2D, UpSampling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.datasets import mnist
+import json
+import matplotlib.pyplot as plt # for plotting
+
+# MINIST 데이터 로딩
+(x_train, _), (x_test, _) = mnist.load_data()   # y_train, y_test는 사용하지 않음
+
+x_train = np.expand_dims(x_train, axis=3)
+x_test = np.expand_dims(x_test, axis=3)
+
+x_train = x_train.astype('float32') / 255.
+x_test = x_test.astype('float32') / 255.
+```
+```shell
+# MINIST 데이터 로딩 실형 결과 예시
+Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz
+11493376/11490434 [ ============================ ] - 0s 0us/step
+11501568/11490434 [ ============================ ] - 0s 0us/step
+```
+```python
+# AutoEncoder 모델 구성 - Input 부분
+input_shape = x_train.shape[1:]
+input_img = Input(shape=input_shape)
+
+# AutoEncoder 모델 구성 - Encoder 부분
+encode_conv_layer1 = Conv2D(16, (3, 3), activation='relu', padding='same')
+encode_pool_layer1 = MaxPooling2D((2,2), padding='same')
+encode_conv_layer2 = Conv2D(8, (3, 3), activation='relu', padding='same')
+encode_pool_layer2 = MaxPooling2D((2,2), padding='same')
+encode_conv_layer3 = Conv2D(4, (3, 3), activation='relu', padding='same')
+encode_pool_layer3 = MaxPooling2D((2,2), padding='same')
+
+encoded = encode_conv_layer1(input_img)
+encoded = encoded_pool_layer1(encoded)
+encoded = encode_conv_layer2(encoded)
+encoded = encoded_pool_layer2(encoded)
+encoded = encode_conv_layer3(encoded)
+encoded = encoded_pool_layer3(encoded)
+
+# AutoEncoder 모델 구성 - Decoder 부분
+decode_conv_layer_1 = Conv2D(4, (3, 3), activation='relu', padding='same')
+decode_upsample_layer_1 = UpSampling2D((2, 2))
+decode_conv_layer_2 = Conv2D(8, (3, 3), activation='relu', padding='same')
+decode_upsample_layer_2 = UpSampling2D((2, 2))
+decode_conv_layer_3 = Conv2D(16, (3, 3), activation='relu')
+decode_upsample_layer_3 = UpSampling2D((2, 2))
+decode_conv_layer_4 = Conv2D(1, (3, 3), activation='sigmoid', padding='same')
+
+# Decoder는 Encoder의 출력을 입력으로 받습니다.
+decoded = decode_conv_layer1(encoded)
+decoded = decode_upsample_layer_1(decoded)
+decoded = decode_conv_layer2(decoded)
+decoded = decode_upsample_layer_2(decoded)
+decoded = decode_conv_layer3(decoded)
+decoded = decode_upsample_layer_3(decoded)
+decoded = decode_conv_layer4(decoded)
+
+# AutoEncoder 모델 정의
+autoencoder = Model(input_img, decoded)
+autoencoder.summary()
+autoencoder.complie(optimizer='adam', loss='binary_crossentropy')
+```
+```shell
+# 실행 결과 예시
+Model: "model"
+#---------------------------------------------------------------
+Layer (type)                    Output Shape            Param #
+#===============================================================
+input_1 (InputLayer)            [(None, 28, 28, 1)]     0
+#---------------------------------------------------------------
+conv2d (Conv2D)                 (None, 28, 28, 6)       160
+#---------------------------------------------------------------
+max_pooling2d (MaxPooling2D)    (None, 14, 14, 16)      0
+#---------------------------------------------------------------
+conv2d_1 (Conv2D)               (None, 14, 14, 8)       1160
+#---------------------------------------------------------------
+max_pooling2d_1 (MaxPooling2D)  (None, 7, 7, 8)         0
+#---------------------------------------------------------------
+conv2d_2 (Conv2D)               (None, 7, 7, 4)         292
+#---------------------------------------------------------------
+max_pooling2d_2 (MaxPooling2D)  (None, 4, 4, 4)         0
+#---------------------------------------------------------------
+conv2d_3 (Conv2D)               (None, 4, 4, 4)         148
+#---------------------------------------------------------------
+up_sampling2d (UpSampling2D)    (None, 4, 4, 4)         0
+#---------------------------------------------------------------
+conv2d_4 (Conv2D)               (None, 8, 8, 4)         296
+#---------------------------------------------------------------
+up_sampling2d_1 (UpSampling2D)  (None, 16, 16, 8)       0
+#---------------------------------------------------------------
+conv2d_5 (Conv2D)               (None, 14, 14, 16)      1168
+#---------------------------------------------------------------
+up_sampling2d_2 (UpSampling2D)  (None, 28, 28, 16)      0
+#---------------------------------------------------------------
+conv2d_6 (Conv2D)               (None, 28, 28, 1)       145
+#===============================================================
+Total params: 3,369
+Trainable params: 3,369
+Non-trainable params: 0
+```
+위 예시를 토대로 알 수 있는 부분은 다음과 같다. </br>
+
+---
+`Conv2D` 레이어는 shape를 변화시키지 않는다. </br>
+`MaxPooling2D` 레이어가 Output shape를 변화시킨다 </br>
+
+---
+
+아래는 AutoEncoder 훈련 및 이미지 복원을 수행하는 예시 코드
+```python
+# AutoEncoder 훈련 부분
+autoencoder.complie(optimizer='adadelta', loss='binary_crossentropy')
+
+autoencoder.fit(x_tran, x_train, epochs=2, 
+                batch_size=256, shuffle=True, 
+                validation_data=(x_test, x_test))
+
+# 1) 테스트 데이터셋에서 10개만 골라서 2) AutoEncoder 모델의 이미지 복원생성
+x_test_10 = x_test[:10]
+x_test_hat = autoencoder.predict(x_test_10)
+x_test_imgs = x_test_10.reshape(-1, 28, 28)
+x_test_hat_imgs = x_test_hap.reshape(-1, 28, 28)
+
+# 이미지 사이즈 지정
+plt.figure(figsize=(12,5))
+for i in range(10):
+    # 원본이미지 출력
+    plt.subplot(2, 10, i+1)
+    plt.imshow(x_test_imgs[i])
+    # 생성된 이미지 출력
+    plt.subplot(2, 10, i+11)
+    plt.imshow(x_test_imgs[i])
+```
+```shell
+# 훈련 결과 예시
+Epoch 1/2
+235/235 [ ======================= ] - 97s 403ms/step - loss: 0.6922 - val_loss: 0.6917
+Epoch 2/2
+235/235 [ ======================= ] - 95s 402ms/step - loss: 0.6912 - val_loss: 0.6906
+
+<keras.callbacks.History at 0x7f09049379a0>
+```
+<!-- 그림8 -->
+
+테스트 데이터셋 10개분의 이미지 복원 예시 결과
+
+### Decoder Layers for Reconstruction
+위의 예시는 Convolution의 수학적 역연산을 활용하여 이미지 복원을 테스트한 것이다.
+```text
+이미지 복원에는 Upsampling 레이어를 통해 필터링된 이미지를 복원한다.
+
+Upsampling에는 크게 다음 3가지 방법이 있다.
+
+* Nearest Neighbor: 복원해야 할 값을 가까운 값으로 복제
+* Bed of Nails: 복원해야 할 값을 0으로 처리
+* Max Unpooling: Max Pooling 때 버린 값을 따로 기억해두었다가 그 값으로 복원한다.
+```
+---
+[Deconvoultion 참고](https://analysisbugs.tistory.com/104) </br>
+[Transposed Convolution 참고](https://zzsza.github.io/data/2018/06/25/upsampling-with-transposed-convolution/)
+
+---
