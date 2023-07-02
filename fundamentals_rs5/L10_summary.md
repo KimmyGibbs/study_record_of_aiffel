@@ -562,7 +562,7 @@ Epoch 2/2
 <keras.callbacks.History at 0x7f09049379a0>
 ```
 <!-- 그림8 -->
-
+![그림 8](./images_fundamentals/lec10_8.png "그림 8") </br>
 테스트 데이터셋 10개분의 이미지 복원 예시 결과
 
 ### Decoder Layers for Reconstruction
