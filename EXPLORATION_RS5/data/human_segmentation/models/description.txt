@@ -1,0 +1,5 @@
+deeplabv3_xception_tf_dim_ordering_tf_kernels.h5
+파일을 사용하였음
+
+링크 주소
+>> https://github.com/ayoolaolafenwa/PixelLib/releases/download/1.1/deeplabv3_xception_tf_dim_ordering_tf_kernels.h5
