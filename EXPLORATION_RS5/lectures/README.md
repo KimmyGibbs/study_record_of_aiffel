@@ -1,12 +1,22 @@
 # EXPLORATION_RS5
-```text
-EXPLORATION의 강의 정리 (~/lectures/)
+EXPLORATION의 강의 정리 (`~/lectures/`)</br>
+
+> 번호.파일명
+>> 강의명
 
 1. example_1st.ipynb
-    - "사용년수"만 가지고 맥북의 중고가 맞춰보기
-    - a.k.a "Linear Regression"
+    - 
 2. example_2nd.ipynb
-    - 다양한 정보로 원하는 값 예측해보기
+    - 
 3. example_3rd.ipynb
-    - 나의 첫 번째 캐글 경진대회, 무작정 따라해보기
-```
+    - 
+4. example_4th.ipynb
+    - 
+5. example_5th.ipynb
+    - 
+6. example_6th.ipynb
+    - 
+7. example_7th.ipynb
+    - 11. 뉴스 요약봇 만들기
+8. example_8th.ipynb
+    - 13. 난 스케치를 할 테니 너는 채색을 하거라
