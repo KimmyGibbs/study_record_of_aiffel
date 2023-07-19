@@ -20,3 +20,6 @@ EXPLORATION의 강의 정리 (`~/lectures/`)</br>
     - 11. 뉴스 요약봇 만들기
 8. example_8th.ipynb
     - 13. 난 스케치를 할 테니 너는 채색을 하거라
+9. Transformer_practice.ipyng
+    - 15. 트랜스포머로 만드는 대화형 챗봇
+    - 위 파일은 실습 부분만 기록해둠, 수정필요
