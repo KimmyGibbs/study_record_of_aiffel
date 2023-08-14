@@ -202,7 +202,93 @@ embedding_layer = tf.keras.layers.Embedding(input_dim=100, output_dim=256)
 토큰화?
 - 한 문장에서 단어의 수를 정의하는 기법
 
+---
+
 **공백 기반 토큰화**
+- 자연어의 노이즈를 제거하는 방법 중 하나
+    - `Hi,`를 `Hi`와 `,`로 나누기 위해 문장부호 양옆에 공백을 추가함
+
+```python
+## 공백 기반 토큰화 예시코드
+corpus = \
+"""
+in the days that followed i learned to spell in this uncomprehending way a great many words ,  among them pin ,  hat ,  cup and a few verbs like sit ,  stand and walk .  
+but my teacher had been with me several weeks before i understood that everything has a name . 
+one day ,  we walked down the path to the well house ,  attracted by the fragrance of the honeysuckle with which it was covered .  
+some one was drawing water and my teacher placed my hand under the spout .  
+as the cool stream gushed over one hand she spelled into the other the word water ,  first slowly ,  then rapidly .  
+i stood still ,  my whole attention fixed upon the motions of her fingers .  
+suddenly i felt a misty consciousness as of something forgotten a thrill of returning thought  and somehow the mystery of language was revealed to me .  
+i knew then that  w a t e r  meant the wonderful cool something that was flowing over my hand .  
+that living word awakened my soul ,  gave it light ,  hope ,  joy ,  set it free !  
+there were barriers still ,  it is true ,  but barriers that could in time be swept away . 
+"""
+
+tokens = corpus.split()
+
+print("문장이 포함하는 Tokens:", tokens)
+```
+```shell
+문장이 포함하는 Tokens: ['in', 'the', 'days', 'that', 'followed', 'i', 'learned', 'to', 'spell', 'in', 'this', 'uncomprehending', 'way', 'a', 'great', 'many', 'words', ',', 'among', 'them', 'pin', ',', 'hat', ',', 'cup', 'and', 'a', 'few', 'verbs', 'like', 'sit', ',', 'stand', 'and', 'walk', '.', 'but', 'my', 'teacher', 'had', 'been', 'with', 'me', 'several', 'weeks', 'before', 'i', 'understood', 'that', 'everything', 'has', 'a', 'name', '.', 'one', 'day', ',', 'we', 'walked', 'down', 'the', 'path', 'to', 'the', 'well', 'house', ',', 'attracted', 'by', 'the', 'fragrance', 'of', 'the', 'honeysuckle', 'with', 'which', 'it', 'was', 'covered', '.', 'some', 'one', 'was', 'drawing', 'water', 'and', 'my', 'teacher', 'placed', 'my', 'hand', 'under', 'the', 'spout', '.', 'as', 'the', 'cool', 'stream', 'gushed', 'over', 'one', 'hand', 'she', 'spelled', 'into', 'the', 'other', 'the', 'word', 'water', ',', 'first', 'slowly', ',', 'then', 'rapidly', '.', 'i', 'stood', 'still', ',', 'my', 'whole', 'attention', 'fixed', 'upon', 'the', 'motions', 'of', 'her', 'fingers', '.', 'suddenly', 'i', 'felt', 'a', 'misty', 'consciousness', 'as', 'of', 'something', 'forgotten', 'a', 'thrill', 'of', 'returning', 'thought', 'and', 'somehow', 'the', 'mystery', 'of', 'language', 'was', 'revealed', 'to', 'me', '.', 'i', 'knew', 'then', 'that', 'w', 'a', 't', 'e', 'r', 'meant', 'the', 'wonderful', 'cool', 'something', 'that', 'was', 'flowing', 'over', 'my', 'hand', '.', 'that', 'living', 'word', 'awakened', 'my', 'soul', ',', 'gave', 'it', 'light', ',', 'hope', ',', 'joy', ',', 'set', 'it', 'free', '!', 'there', 'were', 'barriers', 'still', ',', 'it', 'is', 'true', ',', 'but', 'barriers', 'that', 'could', 'in', 'time', 'be', 'swept', 'away', '.']
+```
+
+---
+
+**형태소 기반 토큰화**
+- 문장을 분리할 때, 공백이 아닌 **형태소**를 기준으로 분리(`Tokenizing`)하는 기법
+> 형태소?
+>> (명사) 뜻을 가진 가장 작은 말의 단위
+>>> ex) `오늘도 공부만 한다` &rarr; `오늘`, `도`, `공부`, `만`, `한다`
+
+한국어 형태소 분석기
+- KoNLPy
+    - [파이썬 한국어 NLP - KoNLPy 0.4.3 documentation](https://konlpy-ko.readthedocs.io/ko/v0.4.3/)
+- [한국어 형태소 분석기 성능 비교](https://iostream.tistory.com/144)
+
+아래는 한국어 형태소 분석기를 사용하는 비교실험 예제</br>
+1. konlpy 및 Mecab의 설치 여부 확인
+```python
+from konlpy.tag import Hannanum,Kkma,Komoran,Mecab,Okt
+```
+만약 `import` 에러가 발생한다면 아래의 과정을 수행하라고 함
+```shell
+$ pip install konlpy
+$ cd ~/aiffel/text_preprocess
+$ git clone https://github.com/SOMJANG/Mecab-ko-for-Google-Colab.git
+$ cd Mecab-ko-for-Google-Colab
+$ bash install_mecab-ko_on_colab190912.sh
+```
+위 과정 이후 `JVMNotFoundException`에러 발생 시 아래와 같이 자바 설치
+```shell
+$ sudo apt update
+$ sudo apt install default-jre
+```
+2. 설치 완료 후 다음 문장을 어떻게 해석하는지 비교해 보자
+```shell
+코로나바이러스는 2019년 12월 중국 우한에서 처음 발생한 뒤
+전 세계로 확산된, 새로운 유형의 호흡기 감염 질환입니다.
+```
+3. 코드 예시
+```python
+tokenizer_list = [Hannanum(),Kkma(),Komoran(),Mecab(),Okt()]
+
+kor_text = '코로나바이러스는 2019년 12월 중국 우한에서 처음 발생한 뒤 전 세계로 확산된, 새로운 유형의 호흡기 감염 질환입니다.'
+
+for tokenizer in tokenizer_list:
+    print('[{}] \n{}'.format(tokenizer.__class__.__name__, tokenizer.pos(kor_text)))
+```
+```shell
+Hannanum] 
+[('코로나바이러스', 'N'), ('는', 'J'), ('2019년', 'N'), ('12월', 'N'), ('중국', 'N'), ('우한', 'N'), ('에서', 'J'), ('처음', 'M'), ('발생', 'N'), ('하', 'X'), ('ㄴ', 'E'), ('뒤', 'N'), ('전', 'N'), ('세계', 'N'), ('로', 'J'), ('확산', 'N'), ('되', 'X'), ('ㄴ', 'E'), (',', 'S'), ('새롭', 'P'), ('은', 'E'), ('유형', 'N'), ('의', 'J'), ('호흡기', 'N'), ('감염', 'N'), ('질환', 'N'), ('이', 'J'), ('ㅂ니다', 'E'), ('.', 'S')]
+[Kkma] 
+[('코로나', 'NNG'), ('바', 'NNG'), ('이러', 'MAG'), ('슬', 'VV'), ('는', 'ETD'), ('2019', 'NR'), ('년', 'NNM'), ('12', 'NR'), ('월', 'NNM'), ('중국', 'NNG'), ('우', 'NNG'), ('하', 'XSV'), ('ㄴ', 'ETD'), ('에', 'VV'), ('서', 'ECD'), ('처음', 'NNG'), ('발생', 'NNG'), ('하', 'XSV'), ('ㄴ', 'ETD'), ('뒤', 'NNG'), ('전', 'NNG'), ('세계', 'NNG'), ('로', 'JKM'), ('확산', 'NNG'), ('되', 'XSV'), ('ㄴ', 'ETD'), (',', 'SP'), ('새', 'NNG'), ('롭', 'XSA'), ('ㄴ', 'ETD'), ('유형', 'NNG'), ('의', 'JKG'), ('호흡기', 'NNG'), ('감염', 'NNG'), ('질환', 'NNG'), ('이', 'VCP'), ('ㅂ니다', 'EFN'), ('.', 'SF')]
+[Komoran] 
+[('코로나바이러스', 'NNP'), ('는', 'JX'), ('2019', 'SN'), ('년', 'NNB'), ('12월', 'NNP'), ('중국', 'NNP'), ('우', 'NNP'), ('한', 'NNP'), ('에서', 'JKB'), ('처음', 'NNG'), ('발생', 'NNG'), ('하', 'XSV'), ('ㄴ', 'ETM'), ('뒤', 'NNG'), ('전', 'MM'), ('세계로', 'NNP'), ('확산', 'NNG'), ('되', 'XSV'), ('ㄴ', 'ETM'), (',', 'SP'), ('새롭', 'VA'), ('ㄴ', 'ETM'), ('유형', 'NNP'), ('의', 'JKG'), ('호흡기', 'NNG'), ('감염', 'NNP'), ('질환', 'NNG'), ('이', 'VCP'), ('ㅂ니다', 'EF'), ('.', 'SF')]
+[Mecab] 
+[('코로나', 'NNP'), ('바이러스', 'NNG'), ('는', 'JX'), ('2019', 'SN'), ('년', 'NNBC'), ('12', 'SN'), ('월', 'NNBC'), ('중국', 'NNP'), ('우한', 'NNP'), ('에서', 'JKB'), ('처음', 'NNG'), ('발생', 'NNG'), ('한', 'XSV+ETM'), ('뒤', 'NNG'), ('전', 'NNG'), ('세계', 'NNG'), ('로', 'JKB'), ('확산', 'NNG'), ('된', 'XSV+ETM'), (',', 'SC'), ('새로운', 'VA+ETM'), ('유형', 'NNG'), ('의', 'JKG'), ('호흡기', 'NNG'), ('감염', 'NNG'), ('질환', 'NNG'), ('입니다', 'VCP+EF'), ('.', 'SF')]
+[Okt] 
+[('코로나바이러스', 'Noun'), ('는', 'Josa'), ('2019년', 'Number'), ('12월', 'Number'), ('중국', 'Noun'), ('우한', 'Noun'), ('에서', 'Josa'), ('처음', 'Noun'), ('발생', 'Noun'), ('한', 'Josa'), ('뒤', 'Noun'), ('전', 'Noun'), ('세계', 'Noun'), ('로', 'Josa'), ('확산', 'Noun'), ('된', 'Verb'), (',', 'Punctuation'), ('새로운', 'Adjective'), ('유형', 'Noun'), ('의', 'Josa'), ('호흡기', 'Noun'), ('감염', 'Noun'), ('질환', 'Noun'), ('입니다', 'Adjective'), ('.', 'Punctuation')]
+```
 
 ## 1-5. 토큰화 : 다른 방법들
 
