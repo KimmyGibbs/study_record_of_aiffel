@@ -472,6 +472,26 @@ Merged Vocab: ['es', 'est', 'lo', 'low', 'ne']
 ---
 
 ## 1-6. 토큰에게 의미를 부여하기
+**Word2Vec**
+- *동사에 등장하는 단어끼리는 연관성이 있다*는 아이디어로 시작된 알고리즘
+    - [wikidocs : Word2Vec](https://wikidocs.net/22660)
 
+---
+
+**FastText**
+- Word2Vec의 문제점을 해결하기 위한 알고리즘
+    - Word2Vec의 경우 연산의 빈부격차가 존재
+        - 자주 등장하지 않는 단어는 최악의 경우 단 한번의 연산만을 거쳐 랜덤하게 초기화된 값과 크게 다르지 않은 상태로 알고리즘이 종료될 수 있다.
+- FastText는 BPE와 비슷한 아이디어를 적용하였다.
+    - [target: Fasttext의 등장(2016)](https://brunch.co.kr/@learning/7)
+
+---
+
+**ELMo - the 1st Contextualized Word Embedding**
+- Word2Vec과 FastText는 **동음이의어를 처리할 수 없다**는 단점이 있다.
+- 단어의 의미 벡터를 구하기 위해서 그 단어가 사용된 주변 단어의 맥락을 넘어서 사용된 시퀀스 전체의 맥락이 함께 고려되는 Word Embedding이 필요해진다.
+    - 이런 개념을 `Contextualized Word Embedding`이라고 한다.
+    [전이 학습 기반 NLP: ELMo](https://brunch.co.kr/@learning/12)
+- `Contextualized Word Embedding`은 ELMo나 BERT 등에 많이 사용되고 있다.
 
 ## 1-7. 마무리하며
