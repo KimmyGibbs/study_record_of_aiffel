@@ -290,8 +290,188 @@ Hannanum]
 [('코로나바이러스', 'Noun'), ('는', 'Josa'), ('2019년', 'Number'), ('12월', 'Number'), ('중국', 'Noun'), ('우한', 'Noun'), ('에서', 'Josa'), ('처음', 'Noun'), ('발생', 'Noun'), ('한', 'Josa'), ('뒤', 'Noun'), ('전', 'Noun'), ('세계', 'Noun'), ('로', 'Josa'), ('확산', 'Noun'), ('된', 'Verb'), (',', 'Punctuation'), ('새로운', 'Adjective'), ('유형', 'Noun'), ('의', 'Josa'), ('호흡기', 'Noun'), ('감염', 'Noun'), ('질환', 'Noun'), ('입니다', 'Adjective'), ('.', 'Punctuation')]
 ```
 
+---
+
+**사전에 없는 단어의 문제**
+- 공백 기반, 형태소 기반의 토큰화 기법들은 모두 **의미를 가지는 단위로 토큰을 생성**
+    - 데이터에 포함되는 모든 단어를 처리할 수 없음
+    - 자주 등장한 상위 N개의 단어만을 사용하여 토큰 생성
+    - 나머지는 `<unk>`과 같은 **특수한 토큰(Unknown Token)으로 치환**
+> 이러한 전처리는 종종 큰 문제를 야기함
+>> 토큰화 예시
+>>> 코로나바이러스는 2019년 12월 중국 우한에서 처음 발생한 뒤
+전 세계로 확산된, 새로운 유형의 호흡기 감염 질환입니다. 
+>>> &rarr;
+>>> `<unk>`는 2019년 12월 중국 `<unk>`에서 처음 발생한 뒤
+전 세계로 확산된, 새로운 유형의 호흡기 감염 질환입니다.
+
+위 문장을 영어로 번역 시, 핵심 단어인 `코로나바이러스`와 `우한`을 모르면 번역을 수행할 수 없다.</br>
+
+이를 **OOV(Out-Of-Vocabulary)** 문제라고 한다.
+- **새로 등장한(본 적 없는)단어에 대해 약한 모습**을 보인다. (ex: 번역이 어색함 등)
+
+---
+
 ## 1-5. 토큰화 : 다른 방법들
+**BPE(Byte Pair Encoding)**
+- 데이터에서 **가장 많이 등장하는 바이트 쌍(Byte Pair)**을 새로운 단어로 치환하여 압축하는 기법
+- 1994년 고안된 알고리즘
+- 초기에는 데이터 압축을 위한 알고리즘
+    - 예시는 아래와 같다.
+
+```shell
+# 가장 많이 등장한 바이트 쌍 "aa"를 "Z"로 치환합니다.
+aaabdaaabac
+→ 
+# "aa" 총 두 개가 치환되어 4바이트를 2바이트로 압축하였습니다.
+ZabdZabac
+
+# 그다음 많이 등장한 바이트 쌍 "ab"를 "Y"로 치환합니다.
+Z=aa
+→ 
+# "ab" 총 두 개가 치환되어 4바이트를 2바이트로 압축하였습니다.
+ZYdZYac
+
+# 여기서 작업을 멈추어도 되지만, 치환된 바이트에 대해서도 진행한다면
+Z=aa
+# 가장 많이 등장한 바이트 쌍 "ZY"를 "X"로 치환합니다.
+Y=ab
+→ 
+XdXac
+Z=aa
+Y=ab
+# 압축이 완료되었습니다!
+X=ZY
+```
+
+해당 알고리즘을 토큰화에 적용하자고 제안(2015년)
+1. 모든 단어를 문자(바이트)들의 집합으로 취급
+2. 자주 등장하는 문자 쌍을 합침
+3. 접두사 / 접미어의 의미를 캐치할 수 있다.
+4. 처음 등장하는 단어는 문자(알파벳)들의 조합으로 표시
+
+**OOV 문제를 완전히 해결**할 수 있다.</br>
+> [Neural Machine Translation of Rare Words with Subword Units](https://arxiv.org/pdf/1508.07909.pdf)
+
+아래는 Python 예제
+```python
+import re, collections
+
+# 임의의 데이터에 포함된 단어들입니다.
+# 우측의 정수는 임의의 데이터에 해당 단어가 포함된 빈도수입니다.
+vocab = {
+    'l o w '      : 5,
+    'l o w e r '  : 2,
+    'n e w e s t ': 6,
+    'w i d e s t ': 3
+}
+
+num_merges = 5
+
+def get_stats(vocab):
+    """
+    단어 사전을 불러와
+    단어는 공백 단위로 쪼개어 문자 list를 만들고
+    빈도수와 쌍을 이루게 합니다. (symbols)
+    """
+    pairs = collections.defaultdict(int)
+    
+    for word, freq in vocab.items():
+        symbols = word.split()
+
+        for i in range(len(symbols) - 1):             # 모든 symbols를 확인하여 
+            pairs[symbols[i], symbols[i + 1]] += freq  # 문자 쌍의 빈도수를 저장합니다. 
+        
+    return pairs
+
+def merge_vocab(pair, v_in):
+    """
+    문자 쌍(pair)과 단어 리스트(v_in)를 입력받아
+    각각의 단어에서 등장하는 문자 쌍을 치환합니다.
+    (하나의 글자처럼 취급)
+    """
+    v_out = {}
+    bigram = re.escape(' '.join(pair))
+    p = re.compile(r'(?<!\S)' + bigram + r'(?!\S)')
+    
+    for word in v_in:
+        w_out = p.sub(''.join(pair), word)
+        v_out[w_out] = v_in[word]
+        
+    return v_out, pair[0] + pair[1]
+
+token_vocab = []
+
+for i in range(num_merges):
+    print(">> Step {0}".format(i + 1))
+    
+    pairs = get_stats(vocab)
+    best = max(pairs, key=pairs.get)  # 가장 많은 빈도수를 가진 문자 쌍을 반환합니다.
+    vocab, merge_tok = merge_vocab(best, vocab)
+    print("다음 문자 쌍을 치환:", merge_tok)
+    print("변환된 Vocab:\n", vocab, "\n")
+    
+    token_vocab.append(merge_tok)
+    
+print("Merged Vocab:", token_vocab)
+```
+결과 예시
+```shell
+>> Step 1
+다음 문자 쌍을 치환: es
+변환된 Vocab:
+ {'l o w ': 5, 'l o w e r ': 2, 'n e w es t ': 6, 'w i d es t ': 3} 
+
+>> Step 2
+다음 문자 쌍을 치환: est
+변환된 Vocab:
+ {'l o w ': 5, 'l o w e r ': 2, 'n e w est ': 6, 'w i d est ': 3} 
+
+>> Step 3
+다음 문자 쌍을 치환: lo
+변환된 Vocab:
+ {'lo w ': 5, 'lo w e r ': 2, 'n e w est ': 6, 'w i d est ': 3} 
+
+>> Step 4
+다음 문자 쌍을 치환: low
+변환된 Vocab:
+ {'low ': 5, 'low e r ': 2, 'n e w est ': 6, 'w i d est ': 3} 
+
+>> Step 5
+다음 문자 쌍을 치환: ne
+변환된 Vocab:
+ {'low ': 5, 'low e r ': 2, 'ne w est ': 6, 'w i d est ': 3} 
+
+Merged Vocab: ['es', 'est', 'lo', 'low', 'ne']
+```
+
+---
+
+**WPM(Wordpiece Model)**
+- 하나의 단어를 여러개의 sub-word 집합으로 보는 방법
+> 예시) `preview`, `predict`의 경우
+>> 두 단어를 별개로 생각하지 않고 `pre + view`, `pre + dict`로 보면서, 접두어인 `pre`의 의미를 고려하여 토큰화를 하면 학습률이 올라갈 것이다라는 접근법
+    - OOV(Out-Of-Vocabulary) 문제를 해결하기 위해 고안된 기법
+
+*추가 내용*
+- 구글에서 BPE을 변형해 제안한 알고리즘
+- WPM은 BPE에 대해 **두 가지 차별성**을 가짐
+    1. 공백 복원을 위해 단어 시작부에 `_`를 추가
+    2. 빈도수 기반이 아닌 가능도(Likelihood)를 증가시키는 방향으로 문자 쌍을 합침
+        - 더 `그럴듯한` 토큰 생성
+
+> 예시구문) i am a boy and you are a girl
+>> [`_i`, `_am`, `_a`, `_b`, `o`, `y`, `_a`, `n`, `d`, `_you`, `_a`, `_gir`, `l`] 로 토큰화
+>>> 문장 복원 시 **1) 모든 토큰 합친 후**, **2) `_`를 공백으로 치환**
+
+[Paper: Japanese and Korean voice search](https://static.googleusercontent.com/media/research.google.com/ko//pubs/archive/37842.pdf)</br>
+[확률과 가능도(likelihood) 그리고 최대우도추정](https://jjangjjong.tistory.com/41)</br>
+[SentencePiece-google's tokenizer](https://github.com/google/sentencepiece)</br>
+[한국어를 위한 토크나이저 - soynlp](https://github.com/lovit/soynlp)</br>
+
+---
 
 ## 1-6. 토큰에게 의미를 부여하기
+
 
 ## 1-7. 마무리하며
