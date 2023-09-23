@@ -4,7 +4,7 @@ AIFFEL관련 내용을 기록해볼 예정
 <details>
 <summary><b>RS_5</b></summary>
 
-1. ON_BOARD_RS5
+1. `ON_BOARD_RS5`
 2. FUNDAMENTALS_RS5
 3. EXPLORATION_RS5
 4. COMPLETE_DEEP_LEARNING_IN_1_GO_RS5
