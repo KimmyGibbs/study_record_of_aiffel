@@ -17,7 +17,8 @@ AIFFEL관련 내용을 기록해볼 예정
 <details>
 <summary><b>RS_5_else</b></summary>
 
-- DL_THON
+- `DL_THON`
+  - *collaboration member in this project's repo*
 - `SLOW_PAPER`
     - `10/4`자로 조기취업하여 이후 진행 못함
 - PoC_LAB
